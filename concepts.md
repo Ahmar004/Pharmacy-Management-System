@@ -45,7 +45,7 @@ The system needs to let a pharmacy:
 - Let API consumers **search, filter, sort, and page through** large lists of data
 - **Validate** every piece of incoming data and respond with clear, meaningful errors
 
-This is a classic real-world backend project because it forces you to practice almost every core backend skill at once: auth, relational data design, business rules, and clean API design.
+This is a real-world backend project that makes me practice almost every core backend skill at once: auth, relational data design, business rules, and clean API design.
 
 ---
 
