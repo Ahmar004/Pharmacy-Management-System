@@ -1,7 +1,8 @@
 # Pharmacy Management System API
+
 ## A Complete Concept & Requirements Study Guide (Node.js + Express.js)
 
-> **Purpose of this document:** Before writing a single line of code, this guide walks through *every concept* I need to understand in order to build this project correctly. No implementation - just deep, beginner friendly understanding of the "why" and "how it works" behind each concept.
+> **Purpose of this document:** Before writing a single line of code, this guide walks through _every concept_ I need to understand in order to build this project correctly. No implementation - just deep, beginner friendly understanding of the "why" and "how" behind each concept.
 
 ---
 
@@ -35,6 +36,7 @@
 We are building the **backend API** for a Pharmacy Management System. Think of it as the "engine room" that powers a pharmacy's digital operations — no visual interface, just a set of well-organized endpoints (URLs) that a frontend app (web or mobile) would call to get work done.
 
 The system needs to let a pharmacy:
+
 - Manage **who can log in and what they're allowed to do** (Admin, Pharmacist, Staff)
 - Keep track of **medicines** in stock, including expiry dates
 - Record **prescriptions** written for customers
@@ -49,48 +51,50 @@ This is a classic real-world backend project because it forces you to practice a
 
 ## 2. Software Requirements Analysis
 
-Before writing code, professional developers do **Requirements Analysis** — figuring out precisely *what* the system must do and *how well* it must do it. This step prevents wasted work and confused design later.
+Before writing code, professional developers do **Requirements Analysis** — figuring out precisely _what_ the system must do and _how well_ it must do it. This step prevents wasted work and confused design later.
 
 ### 2.1 Functional vs Non-Functional Requirements
 
-**Functional Requirements** describe *what the system does* — the actual features.
+**Functional Requirements** describe _what the system does_ — the actual features.
 Examples from our project:
+
 - A pharmacist can add a new medicine to inventory
 - A staff member can process a sale
 - The system must prevent selling an expired medicine
 - An admin can create new user accounts
 
-**Non-Functional Requirements** describe *how well* the system performs — quality attributes, not features.
+**Non-Functional Requirements** describe _how well_ the system performs — quality attributes, not features.
 Examples:
+
 - The API must respond within an acceptable time even with thousands of records (**performance**)
 - Passwords must never be stored in plain text (**security**)
 - The list endpoints must handle large datasets without crashing (**scalability**)
 - Error messages must be clear and consistent (**usability/maintainability**)
 
-Understanding this split matters because it changes *how* you build things. Functional requirements shape your routes and business logic. Non-functional requirements shape your architecture decisions (e.g., why we use pagination, why we hash passwords, why we centralize error handling).
+Understanding this split matters because it changes _how_ you build things. Functional requirements shape your routes and business logic. Non-functional requirements shape your architecture decisions (e.g., why we use pagination, why we hash passwords, why we centralize error handling).
 
 ### 2.2 Identifying Actors (Who Uses the System)
 
 An **actor** is any person or system that interacts with your API. For this project:
 
-| Actor | Description |
-|---|---|
-| **Admin** | Full control — manages users, staff, and everything else |
-| **Pharmacist** | Manages medicines, prescriptions, and sales |
-| **Staff** | Views data, processes sales assigned to them |
-| **Customer** | Not a logged-in user of the API directly, but a data entity — someone whose prescriptions and purchases are recorded |
-| **Supplier** | Also a data entity, not a logged-in actor — provides medicines to the pharmacy |
+| Actor          | Description                                                                                                          |
+| -------------- | -------------------------------------------------------------------------------------------------------------------- |
+| **Admin**      | Full control — manages users, staff, and everything else                                                             |
+| **Pharmacist** | Manages medicines, prescriptions, and sales                                                                          |
+| **Staff**      | Views data, processes sales assigned to them                                                                         |
+| **Customer**   | Not a logged-in user of the API directly, but a data entity — someone whose prescriptions and purchases are recorded |
+| **Supplier**   | Also a data entity, not a logged-in actor — provides medicines to the pharmacy                                       |
 
 Notice the distinction: some "actors" in the real world (Customer, Supplier) are just **data** in our system, not people who log in. Only Admin, Pharmacist, and Staff authenticate into the API. This distinction is critical when designing your database — customers and suppliers don't need passwords or login logic, but they do need to be linked (related) to other data.
 
 ### 2.3 Use Cases
 
-A **use case** is a specific scenario describing an actor achieving a goal. Writing these out in plain English *before* coding helps you discover the exact API endpoints you'll need. A few examples:
+A **use case** is a specific scenario describing an actor achieving a goal. Writing these out in plain English _before_ coding helps you discover the exact API endpoints you'll need. A few examples:
 
-- *"As a Pharmacist, I want to add a new medicine with its supplier, stock quantity, and expiry date, so that inventory stays accurate."*
-- *"As a Staff member, I want to view a paginated list of medicines filtered by availability, so I can quickly find what's in stock."*
-- *"As an Admin, I want to create a new staff account with a specific role, so they can log in with proper permissions."*
-- *"As a Pharmacist, I want the system to reject a sale if the medicine is expired or out of stock, so we never sell unsafe or unavailable products."*
+- _"As a Pharmacist, I want to add a new medicine with its supplier, stock quantity, and expiry date, so that inventory stays accurate."_
+- _"As a Staff member, I want to view a paginated list of medicines filtered by availability, so I can quickly find what's in stock."_
+- _"As an Admin, I want to create a new staff account with a specific role, so they can log in with proper permissions."_
+- _"As a Pharmacist, I want the system to reject a sale if the medicine is expired or out of stock, so we never sell unsafe or unavailable products."_
 
 Every one of these later becomes a specific **API endpoint** with specific **business rules** — that's the bridge between requirements analysis and actual system design.
 
@@ -114,7 +118,7 @@ We'll explore exactly how these relate to each other in Section 11.
 
 ### 3.1 What Node.js Actually Is
 
-JavaScript was originally built to run *only* inside web browsers. **Node.js** is a runtime environment that lets JavaScript run outside the browser — directly on a server/computer. It's built on Google Chrome's **V8 engine** (the same engine that runs JS in Chrome), but it adds capabilities browsers don't have, like reading files, handling network requests, and talking to databases.
+JavaScript was originally built to run _only_ inside web browsers. **Node.js** is a runtime environment that lets JavaScript run outside the browser — directly on a server/computer. It's built on Google Chrome's **V8 engine** (the same engine that runs JS in Chrome), but it adds capabilities browsers don't have, like reading files, handling network requests, and talking to databases.
 
 In short: **Node.js turns JavaScript into a language that can build backend servers.**
 
@@ -134,17 +138,19 @@ This is why Node.js is a great fit for a pharmacy API that will get many concurr
 ### 3.3 The Event Loop
 
 The **event loop** is the mechanism that makes non-blocking behavior possible. It's essentially an infinite loop that:
+
 1. Checks if there's any code ready to run (like a completed database query's callback)
 2. Runs it
 3. Goes back and checks again
 
-You don't have to manage the event loop yourself — it runs automatically for the entire life of your Node.js application. Understanding that it *exists* helps you understand why asynchronous code (`async/await`, Promises, callbacks) is the natural way to write Node.js applications — you're always cooperating with this loop rather than blocking it.
+You don't have to manage the event loop yourself — it runs automatically for the entire life of your Node.js application. Understanding that it _exists_ helps you understand why asynchronous code (`async/await`, Promises, callbacks) is the natural way to write Node.js applications — you're always cooperating with this loop rather than blocking it.
 
 **Why this matters for our project:** every database call (fetching medicines, checking prescriptions, saving a sale) is an I/O operation. We'll write these using `async/await` syntax, which is just a cleaner way to write asynchronous, non-blocking code without deeply nesting callbacks.
 
 ### 3.4 npm and Modules
 
 **npm** (Node Package Manager) is the tool that comes bundled with Node.js. It lets you:
+
 - Install reusable packages (code other people wrote) like Express, JWT libraries, password hashing libraries, etc.
 - Manage your project's dependencies via a file called `package.json`, which lists exactly which packages (and versions) your project needs.
 
@@ -157,6 +163,7 @@ Node.js code is organized into **modules** — each file is its own self-contain
 ### 4.1 What Express.js Is
 
 Node.js by itself gives you very low-level tools to build a server (the built-in `http` module), but writing a full API with plain Node.js quickly becomes repetitive and messy. **Express.js** is a lightweight **framework** built on top of Node.js that gives you a clean, organized way to:
+
 - Define routes (URLs your API responds to)
 - Handle incoming requests and send responses
 - Plug in reusable logic via **middleware** (explained below)
@@ -175,10 +182,11 @@ Every interaction with your API follows this basic cycle:
 
 ### 4.3 Middleware — The Core Idea of Express
 
-**Middleware** is simply a function that sits *between* the incoming request and the final response. It has access to:
+**Middleware** is simply a function that sits _between_ the incoming request and the final response. It has access to:
+
 - `req` (the request object — data sent by the client)
 - `res` (the response object — what you'll send back)
-- `next` (a function you call to pass control to the *next* middleware or route handler)
+- `next` (a function you call to pass control to the _next_ middleware or route handler)
 
 You can chain as many middleware functions as you like before the final handler runs. This is an incredibly powerful pattern because it lets you write reusable, composable pieces of logic. For our project, middleware will be used for:
 
@@ -192,6 +200,7 @@ The beauty of middleware is that each piece of logic is written **once** and reu
 ### 4.4 Routing
 
 Express lets you define routes tied to HTTP methods and URL patterns, e.g.:
+
 - `GET /medicines` → list all medicines
 - `POST /medicines` → create a new medicine
 - `GET /medicines/:id` → get one specific medicine by ID
@@ -221,18 +230,18 @@ Express also supports **routers** — a way to group related routes into their o
 
 A well-designed API communicates meaning through status codes, not just messages. Some you'll use constantly:
 
-| Code | Meaning | Example use in our project |
-|---|---|---|
-| 200 OK | Request succeeded | Successfully fetched medicine list |
-| 201 Created | New resource created | New medicine added |
-| 400 Bad Request | Invalid input | Missing required field in request body |
-| 401 Unauthorized | Not authenticated | No/invalid JWT provided |
-| 403 Forbidden | Authenticated but not allowed | Staff trying to delete a medicine |
-| 404 Not Found | Resource doesn't exist | Medicine ID doesn't exist |
-| 409 Conflict | Conflicting state | Trying to sell an out-of-stock medicine |
-| 500 Internal Server Error | Unexpected server-side failure | Unhandled bug/database failure |
+| Code                      | Meaning                        | Example use in our project              |
+| ------------------------- | ------------------------------ | --------------------------------------- |
+| 200 OK                    | Request succeeded              | Successfully fetched medicine list      |
+| 201 Created               | New resource created           | New medicine added                      |
+| 400 Bad Request           | Invalid input                  | Missing required field in request body  |
+| 401 Unauthorized          | Not authenticated              | No/invalid JWT provided                 |
+| 403 Forbidden             | Authenticated but not allowed  | Staff trying to delete a medicine       |
+| 404 Not Found             | Resource doesn't exist         | Medicine ID doesn't exist               |
+| 409 Conflict              | Conflicting state              | Trying to sell an out-of-stock medicine |
+| 500 Internal Server Error | Unexpected server-side failure | Unhandled bug/database failure          |
 
-Understanding this table deeply matters because a huge part of "Error Handling" (Section 16) is simply: *picking the right status code and message for every possible failure scenario.*
+Understanding this table deeply matters because a huge part of "Error Handling" (Section 16) is simply: _picking the right status code and message for every possible failure scenario._
 
 ---
 
@@ -241,13 +250,14 @@ Understanding this table deeply matters because a huge part of "Error Handling" 
 These two words sound similar but mean very different things — and mixing them up is one of the most common beginner mistakes.
 
 - **Authentication** = "Who are you?" — verifying identity. This is the login process: proving you are a real, registered user (checking email/password, then issuing a token).
-- **Authorization** = "What are you allowed to do?" — checking permissions *after* identity is already confirmed. This is where roles (Admin/Pharmacist/Staff) come in.
+- **Authorization** = "What are you allowed to do?" — checking permissions _after_ identity is already confirmed. This is where roles (Admin/Pharmacist/Staff) come in.
 
 Think of it like entering an office building: **authentication** is showing your ID badge at the front door to prove you're an employee. **Authorization** is whether your badge lets you into the server room, or just the break room.
 
 In our project:
+
 - Authentication happens once at login — the server verifies credentials and issues a **JWT**.
-- Authorization happens on *every subsequent request* — middleware checks the role encoded in that JWT against what the specific route requires.
+- Authorization happens on _every subsequent request_ — middleware checks the role encoded in that JWT against what the specific route requires.
 
 ---
 
@@ -257,19 +267,20 @@ In our project:
 
 Traditionally, many web apps used **sessions**: the server creates a session record (stored in server memory or a database) when you log in, and gives your browser a session ID in a cookie. Every request, the server looks up that session ID to know who you are. This requires the server to **remember state** about every logged-in user.
 
-REST APIs prefer to be **stateless** (Section 5.1) — the server shouldn't have to store anything about who's logged in. **JWT solves this**: instead of the server remembering you, it gives you a signed token that contains your identity information directly inside it. Every request, you send that token, and the server can verify it's authentic *without* looking anything up in a database. This makes JWT auth easy to scale across multiple servers too, since no shared "session store" is needed.
+REST APIs prefer to be **stateless** (Section 5.1) — the server shouldn't have to store anything about who's logged in. **JWT solves this**: instead of the server remembering you, it gives you a signed token that contains your identity information directly inside it. Every request, you send that token, and the server can verify it's authentic _without_ looking anything up in a database. This makes JWT auth easy to scale across multiple servers too, since no shared "session store" is needed.
 
 ### 7.2 The Structure of a JWT
 
 A JWT is a string made of **three parts**, separated by dots: `header.payload.signature`
 
 1. **Header** — metadata about the token, like which signing algorithm is used (commonly `HS256`).
-2. **Payload** — the actual data ("claims") encoded into the token. This might include the user's ID, role, and an expiry timestamp. **Important beginner insight:** the payload is only *encoded* (Base64), not encrypted — anyone can decode and read it. Never put sensitive secrets (like a password) in the payload. The security of a JWT comes from the signature, not secrecy of the payload content.
+2. **Payload** — the actual data ("claims") encoded into the token. This might include the user's ID, role, and an expiry timestamp. **Important beginner insight:** the payload is only _encoded_ (Base64), not encrypted — anyone can decode and read it. Never put sensitive secrets (like a password) in the payload. The security of a JWT comes from the signature, not secrecy of the payload content.
 3. **Signature** — created by taking the header + payload and signing them with a **secret key** that only the server knows, using the chosen algorithm. This signature is what proves the token hasn't been tampered with.
 
 ### 7.3 How JWT Verification Works
 
 When a request comes in with a JWT (typically sent in the `Authorization: Bearer <token>` header):
+
 1. The server splits the token and re-computes the signature using the header + payload + its own secret key.
 2. If the computed signature matches the one in the token, the token is valid and untampered.
 3. If someone tried to edit the payload (e.g., change their role from "staff" to "admin"), the signature would no longer match, and verification would fail.
@@ -280,8 +291,9 @@ This is the core trick that makes JWTs trustworthy without a database lookup: **
 ### 7.4 Access Tokens vs Refresh Tokens (Concept)
 
 Many production systems use two kinds of tokens:
+
 - **Access Token**: short-lived (e.g., 15 minutes), sent with every API request, used for authorization.
-- **Refresh Token**: longer-lived, stored more securely, used *only* to request a new access token once the old one expires — without forcing the user to log in again.
+- **Refresh Token**: longer-lived, stored more securely, used _only_ to request a new access token once the old one expires — without forcing the user to log in again.
 
 This limits the damage if an access token is somehow stolen (it expires quickly), while still keeping the user experience smooth. This is a design decision worth understanding conceptually, even at a basic-project level.
 
@@ -302,11 +314,11 @@ These guards are typically written once as reusable middleware and then attached
 
 **RBAC** means permissions aren't assigned to individual users one-by-one — instead, users are assigned a **role**, and permissions are attached to that role. This project defines three roles:
 
-| Role | Permissions (conceptually) |
-|---|---|
-| **Admin** | Full access to everything — user/staff management, all modules, all data |
+| Role           | Permissions (conceptually)                                                           |
+| -------------- | ------------------------------------------------------------------------------------ |
+| **Admin**      | Full access to everything — user/staff management, all modules, all data             |
 | **Pharmacist** | Manage medicines (add/update/deactivate), manage prescriptions, process/manage sales |
-| **Staff** | Read-only access to most data, but can process sales *assigned to them* |
+| **Staff**      | Read-only access to most data, but can process sales _assigned to them_              |
 
 ### 8.2 Why RBAC Instead of Per-User Permissions?
 
@@ -314,7 +326,7 @@ Imagine a pharmacy with 50 staff members. Assigning individual permissions to ea
 
 ### 8.3 Where RBAC Lives in the Code (Conceptually)
 
-RBAC in an Express app is enforced through the **role-guard middleware** described in Section 7.5. Conceptually, each protected route declares which role(s) are allowed, e.g.: *"this route requires the user's role to be Admin or Pharmacist."* The middleware reads the role from the decoded JWT payload and compares it against that list before allowing the request to continue.
+RBAC in an Express app is enforced through the **role-guard middleware** described in Section 7.5. Conceptually, each protected route declares which role(s) are allowed, e.g.: _"this route requires the user's role to be Admin or Pharmacist."_ The middleware reads the role from the decoded JWT payload and compares it against that list before allowing the request to continue.
 
 ### 8.4 RBAC and the Database Design
 
@@ -331,20 +343,23 @@ Storing a user's password as plain, readable text in the database is a severe se
 ### 9.2 Hashing (Not Encryption)
 
 Instead, passwords are **hashed**. A hash function takes an input (the password) and produces a fixed-length, scrambled output that is:
+
 - **One-way**: you cannot reverse a hash back into the original password.
 - **Deterministic**: the same input always produces the same hash — which is what lets you verify a login later (hash the entered password, compare it to the stored hash).
 
-This is different from **encryption**, which is reversible (meant to be decrypted later with a key). Passwords should never be *encrypted* — they should be *hashed*, because we never need to recover the original password, only verify a match.
+This is different from **encryption**, which is reversible (meant to be decrypted later with a key). Passwords should never be _encrypted_ — they should be _hashed_, because we never need to recover the original password, only verify a match.
 
 ### 9.3 Salting and bcrypt
 
 A plain hash alone is still somewhat vulnerable to precomputed "rainbow table" attacks (huge lookup tables of common passwords and their hashes). To defend against this, we add a **salt** — random data mixed into the password before hashing, unique per user. This ensures that even if two users have the identical password, their stored hashes look completely different.
 
 **bcrypt** is the industry-standard hashing library for this exact purpose. It automatically handles salting for you and includes a "cost factor" (also called salt rounds) that controls how computationally expensive the hashing is — deliberately slow, to make brute-force attacks impractical. Conceptually, when a user registers:
+
 1. Their plain password + a generated salt are run through bcrypt's hashing algorithm.
 2. The resulting hash (which already includes the salt info) is what gets stored in the database — never the plain password.
 
 When they log in:
+
 1. The plain password they typed is hashed using the same algorithm and the stored salt.
 2. The new hash is compared to the stored hash. If they match, the password was correct.
 
@@ -352,28 +367,31 @@ When they log in:
 
 ## 10. System Modules — Conceptual Breakdown
 
-Let's walk through each module from the requirements and understand its *purpose* and *responsibilities* at a conceptual level.
+Let's walk through each module from the requirements and understand its _purpose_ and _responsibilities_ at a conceptual level.
 
 ### 10.1 User & Staff Management
 
 This module handles **who can log into the system**. Two closely related but distinct ideas:
-- **User**: the login identity — email/username, hashed password, and role.
-- **Staff Profile**: additional information about a Pharmacist or Staff member that isn't related to login at all (e.g., contact info, employment details, department). 
 
-Why split these into two separate concepts instead of one giant "User" table with everything crammed in? Because they represent different concerns: authentication data vs. HR/profile data. This separation is also *exactly* why the requirements mention a **One-to-One relationship** between User and Staff Profile — each user has exactly one staff profile (if they need one), and each staff profile belongs to exactly one user. We explore this in Section 11.
+- **User**: the login identity — email/username, hashed password, and role.
+- **Staff Profile**: additional information about a Pharmacist or Staff member that isn't related to login at all (e.g., contact info, employment details, department).
+
+Why split these into two separate concepts instead of one giant "User" table with everything crammed in? Because they represent different concerns: authentication data vs. HR/profile data. This separation is also _exactly_ why the requirements mention a **One-to-One relationship** between User and Staff Profile — each user has exactly one staff profile (if they need one), and each staff profile belongs to exactly one user. We explore this in Section 11.
 
 ### 10.2 Medicine Inventory Management
 
 This module is the heart of the pharmacy's stock-keeping. Each medicine record conceptually needs to track:
+
 - Basic identity info (name, description, category)
 - **Stock quantity** — how many units are currently available
 - **Expiry date** — critical for a pharmacy; selling expired medicine is a safety and legal issue
-- **Status** — active vs. deactivated (pharmacies don't usually *delete* medicine records outright, since historical sales/prescriptions still reference them — instead they're "deactivated" so they stop appearing as sellable, while preserving historical data integrity)
+- **Status** — active vs. deactivated (pharmacies don't usually _delete_ medicine records outright, since historical sales/prescriptions still reference them — instead they're "deactivated" so they stop appearing as sellable, while preserving historical data integrity)
 - **Link to Supplier** — which supplier provides this medicine (a One-to-Many relationship, Section 11)
 
 ### 10.3 Sales & Billing
 
 This module represents the actual transactions: a customer buying medicine, processed by a staff member. Conceptually, a **Sale** needs to:
+
 - Know **which staff member processed it** and **which customer** it was for
 - Know **which medicine(s)** were sold, and in what quantities (this is why sales-to-medicines is Many-to-Many — a single sale can include multiple different medicines, and a medicine can appear across many different sales)
 - Track a **status** (e.g., `completed`, `cancelled`)
@@ -393,12 +411,12 @@ None of these modules exist in isolation — the real complexity (and the real l
 
 ### 11.1 What "Relational" Means
 
-A **relational database** organizes data into **tables** (like spreadsheets), where each row is a record and each column is an attribute. The real power comes from **relationships** — tables can reference each other, so you don't duplicate data everywhere. Instead of writing a supplier's full contact info into every single medicine record, you store it once in a `Suppliers` table and just *reference* it from `Medicines`.
+A **relational database** organizes data into **tables** (like spreadsheets), where each row is a record and each column is an attribute. The real power comes from **relationships** — tables can reference each other, so you don't duplicate data everywhere. Instead of writing a supplier's full contact info into every single medicine record, you store it once in a `Suppliers` table and just _reference_ it from `Medicines`.
 
 ### 11.2 Primary Keys and Foreign Keys
 
 - A **Primary Key (PK)** is a unique identifier for each row in a table (commonly an auto-incrementing ID or a UUID). No two rows share the same primary key.
-- A **Foreign Key (FK)** is a column in one table that stores the primary key of a row in *another* table, creating a link between them.
+- A **Foreign Key (FK)** is a column in one table that stores the primary key of a row in _another_ table, creating a link between them.
 
 Example: a `Medicine` row might have a `supplierId` column — that's a foreign key pointing to a specific row in the `Supplier` table.
 
@@ -406,60 +424,96 @@ Example: a `Medicine` row might have a `supplierId` column — that's a foreign 
 
 A **One-to-One** relationship means one row in Table A relates to exactly one row in Table B, and vice-versa.
 
-**In our project**: one `User` has exactly one `StaffProfile`, and each `StaffProfile` belongs to exactly one `User`. 
+**In our project**: one `User` has exactly one `StaffProfile`, and each `StaffProfile` belongs to exactly one `User`.
 
 **How it's implemented**: the `StaffProfile` table has a foreign key column (e.g., `userId`) pointing back to the `User` table, and that foreign key is marked as **unique** — this uniqueness constraint is what actually enforces "one-to-one" instead of "one-to-many" at the database level. Without the uniqueness constraint, nothing would stop multiple staff profiles from pointing to the same user, which would technically make it one-to-many instead.
 
-**Why separate them at all instead of one table?** As discussed in Section 10.1 — separation of concerns (auth data vs. profile data), and it also means not every `User` *needs* a staff profile (e.g., if customers were ever given logins, they wouldn't need one).
+**Why separate them at all instead of one table?** As discussed in Section 10.1 — separation of concerns (auth data vs. profile data), and it also means not every `User` _needs_ a staff profile (e.g., if customers were ever given logins, they wouldn't need one).
 
 ### 11.4 One-to-Many Relationships
 
-A **One-to-Many** relationship means one row in Table A can relate to *many* rows in Table B, but each row in Table B relates back to only *one* row in Table A.
+A **One-to-Many** relationship means one row in Table A can relate to _many_ rows in Table B, but each row in Table B relates back to only _one_ row in Table A.
 
 **Example 1 — Supplier → Medicines**: One supplier can supply many different medicines, but each medicine record comes from exactly one supplier (in this simplified model). Implementation: the `Medicine` table has a `supplierId` foreign key.
 
 **Example 2 — Customer → Prescriptions**: One customer can have many prescriptions over time (different doctor visits, different needs), but each individual prescription belongs to exactly one customer. Implementation: the `Prescription` table has a `customerId` foreign key.
 
-The general pattern for one-to-many: **the foreign key always lives on the "many" side.** The "one" side doesn't need any extra column — its relationship to many children is discovered by *querying* for all rows where the foreign key matches its ID.
+The general pattern for one-to-many: **the foreign key always lives on the "many" side.** The "one" side doesn't need any extra column — its relationship to many children is discovered by _querying_ for all rows where the foreign key matches its ID.
 
 ### 11.5 Many-to-Many Relationships
 
-A **Many-to-Many** relationship means rows in Table A can relate to *multiple* rows in Table B, and rows in Table B can relate to *multiple* rows in Table A.
+A **Many-to-Many** relationship means rows in Table A can relate to _multiple_ rows in Table B, and rows in Table B can relate to _multiple_ rows in Table A.
 
 **Example 1 — Prescriptions ↔ Medicines**: A single prescription often lists multiple medicines, and any given medicine can appear across many different prescriptions.
 
 **Example 2 — Sales ↔ Medicines**: A single sale/transaction can include multiple different medicines being purchased at once, and a specific medicine will appear in many different sales over time.
 
-**How it's implemented — the Junction Table**: You *cannot* represent many-to-many with a simple foreign key column on either side (that only works for one-to-many). Instead, you introduce a **third table** — often called a **junction table** (or "join table" / "pivot table") — that sits between the two, with a foreign key pointing to each side.
+**How it's implemented — the Junction Table**: You _cannot_ represent many-to-many with a simple foreign key column on either side (that only works for one-to-many). Instead, you introduce a **third table** — often called a **junction table** (or "join table" / "pivot table") — that sits between the two, with a foreign key pointing to each side.
 
 For example, a junction table `PrescriptionMedicine` would have:
+
 - `prescriptionId` (FK → Prescription)
 - `medicineId` (FK → Medicine)
-- Possibly extra columns specific to *that pairing*, like `dosageInstructions` or `quantityPrescribed` — data that doesn't belong to the medicine itself or the prescription itself, but to the *relationship between them*.
+- Possibly extra columns specific to _that pairing_, like `dosageInstructions` or `quantityPrescribed` — data that doesn't belong to the medicine itself or the prescription itself, but to the _relationship between them_.
 
-Similarly, a `SaleMedicine` junction table would connect `Sale` and `Medicine`, and is actually the perfect place to store `quantitySold` and `pricePerUnitAtTimeOfSale` for that specific line item — since price and quantity are specific to *that sale*, not to the medicine's general record.
+Similarly, a `SaleMedicine` junction table would connect `Sale` and `Medicine`, and is actually the perfect place to store `quantitySold` and `pricePerUnitAtTimeOfSale` for that specific line item — since price and quantity are specific to _that sale_, not to the medicine's general record.
 
 **This is one of the most important concepts in relational design**, and pharmacies are a great real-world example of why junction tables exist — because "a sale contains multiple items, each with their own quantity" is such a common real-world pattern (think of any shopping receipt).
 
 ### 11.6 Data Integrity & Constraints
 
-**Data integrity** means the data in your database stays accurate, consistent, and trustworthy over time. Relational databases give you tools to *enforce* this automatically, rather than relying on your application code to always get it right:
+**Data integrity** means the data in your database stays accurate, consistent, and trustworthy over time. Relational databases give you tools to _enforce_ this automatically, rather than relying on your application code to always get it right:
 
 - **NOT NULL constraint**: a column must always have a value (e.g., a medicine must always have a name).
 - **UNIQUE constraint**: no two rows can share the same value in that column (e.g., two users can't share the same email; used for enforcing one-to-one relationships too, as in Section 11.3).
 - **Foreign Key constraint**: the database physically refuses to let you insert a foreign key value that doesn't correspond to a real row in the referenced table (e.g., you cannot create a medicine pointing to a `supplierId` that doesn't exist).
-- **CASCADE / RESTRICT rules**: define what happens when a referenced row is deleted. For example, should deleting a supplier also delete all their medicines (`CASCADE`), or should the database *block* that deletion while medicines still reference it (`RESTRICT`)? For a pharmacy system, you'd typically **restrict or soft-delete** rather than cascade-delete, since medicine history needs to be preserved for audit/legal reasons — this connects back to the "deactivate, don't delete" idea from Section 10.2.
+- **CASCADE / RESTRICT rules**: define what happens when a referenced row is deleted. For example, should deleting a supplier also delete all their medicines (`CASCADE`), or should the database _block_ that deletion while medicines still reference it (`RESTRICT`)? For a pharmacy system, you'd typically **restrict or soft-delete** rather than cascade-delete, since medicine history needs to be preserved for audit/legal reasons — this connects back to the "deactivate, don't delete" idea from Section 10.2.
 
 ### 11.7 What Is an ORM?
 
 Writing raw SQL queries by hand for every operation works, but becomes repetitive and error-prone at scale. An **ORM (Object-Relational Mapper)** — like Prisma, Sequelize, or TypeORM in the Node.js world — lets you define your database tables as JavaScript/TypeScript objects ("models") and interact with your database using regular JS code instead of raw SQL strings. The ORM translates your code into SQL behind the scenes.
 
 Benefits relevant to our project:
+
 - Relationships (one-to-one, one-to-many, many-to-many) can be **declared directly in your model definitions**, and the ORM handles generating the correct foreign keys, junction tables, and constraints for you.
 - Querying related data (e.g., "get a sale along with all its medicines") becomes much simpler than writing manual JOIN queries.
 - Many ORMs offer built-in **migration** systems — version-controlled, incremental changes to your database schema over time, so your team can evolve the database structure safely.
 
-This is a conceptual note for when you move to implementation — you are not required to write raw SQL for this project, but understanding what the ORM does *for* you (rather than treating it as magic) will make you a much stronger backend developer.
+This is a conceptual note for when you move to implementation — you are not required to write raw SQL for this project, but understanding what the ORM does _for_ you (rather than treating it as magic) will make you a much stronger backend developer.
+
+### 11.8 PostgreSQL Specifics (Coming From SQL Server / General SQL)
+
+This project uses **PostgreSQL** as the database and **Express.js** as the framework (correcting the earlier note about the stack). The good news: everything in Sections 11.1–11.6 above (primary keys, foreign keys, one-to-one/one-to-many/many-to-many, constraints) is standard relational database theory — it applies identically in PostgreSQL. What changes is the _dialect_ and a handful of Postgres-specific tools and features. Since you already know SQL Server, here's what's genuinely different or new.
+
+**What PostgreSQL is.** It's a free, open-source, object-relational database system. "Object-relational" means it's a relational database (tables, rows, SQL, joins) but with extra features borrowed from object-oriented concepts, like custom types and rich data types. It's one of the most popular databases for Node.js backends, largely because of how well it's supported by every major ORM and its excellent handling of complex data and constraints.
+
+**Auto-incrementing IDs.** In SQL Server you're used to `IDENTITY(1,1)` columns. PostgreSQL's traditional equivalent is the `SERIAL` (or `BIGSERIAL` for larger ranges) pseudo-type, which automatically creates an internal **sequence** (a separate database object that generates the next number) and wires it to your column. Modern PostgreSQL (10+) also supports the SQL-standard `GENERATED ALWAYS AS IDENTITY` syntax, which behaves very similarly to what you already know from SQL Server. Many Node.js projects on Postgres instead use **UUIDs** (universally unique IDs, long random strings) as primary keys rather than incrementing integers — useful when you don't want IDs to reveal how many records exist, or when merging data from multiple sources.
+
+**Case sensitivity of identifiers.** This trips up almost everyone coming from SQL Server. In PostgreSQL, unquoted table/column names are automatically folded to lowercase. If you write `SELECT * FROM Medicines`, Postgres actually looks for a table called `medicines` (lowercase) — and if you ever _quote_ an identifier with mixed case (`"Medicines"`), it becomes case-sensitive and must match exactly, forever, every time you reference it. The safe convention (and what you'll see in nearly all Node.js + Postgres projects) is: always use `snake_case`, all-lowercase names for tables and columns (e.g., `stock_quantity`, not `StockQuantity`), and never rely on quoted mixed-case identifiers.
+
+**Data types worth knowing.** A few Postgres types you'll run into that don't exist quite the same way in SQL Server:
+
+- `TEXT` — a string type with no length limit, commonly used instead of always specifying `VARCHAR(n)`.
+- `BOOLEAN` — a real native true/false type (SQL Server famously has no boolean type and uses `BIT` instead).
+- `NUMERIC` / `DECIMAL` — exact-precision numbers, important for money values like medicine prices (never use floating-point types for currency).
+- `TIMESTAMP WITH TIME ZONE` (often called `timestamptz`) — the generally recommended way to store date/time values so they're unambiguous across time zones; relevant for expiry dates and sale timestamps.
+- `ENUM` types — Postgres lets you define a custom type that only accepts a fixed list of values (e.g., a `sale_status` enum restricted to `completed` / `cancelled`), enforced by the database itself rather than just application code. This is a very natural fit for our `role` field (admin/pharmacist/staff) and sale status field.
+- `JSONB` — a binary, indexable JSON column type. Not essential for this project's core structured data (which fits neatly into normal relational tables), but good to know it exists for cases where a field's shape is genuinely flexible/unstructured.
+
+**Constraints and syntax differences.** The _concepts_ (NOT NULL, UNIQUE, FOREIGN KEY, CHECK) are identical to what you already know from Section 11.6 and from SQL Server — only small syntax differences exist. One handy Postgres-specific feature: the `RETURNING` clause, which lets an `INSERT`, `UPDATE`, or `DELETE` statement return the affected row(s) directly, without a separate follow-up `SELECT` (SQL Server's closest equivalent is the `OUTPUT` clause, so this will feel familiar).
+
+**Transactions.** The ACID transaction concepts from Section 13.2 work exactly the same way conceptually — `BEGIN`, then your statements, then `COMMIT` (or `ROLLBACK` on failure). This is what you'll rely on for the "process a sale" flow.
+
+**Connecting from Node.js/Express.** There are two common approaches, and it's worth understanding both exist:
+
+1. **Raw driver** — the `pg` package (often called **node-postgres**) is the standard low-level library for connecting Node.js directly to PostgreSQL and running SQL queries. It manages a **connection pool** (a reusable set of open database connections, since opening a fresh connection per request would be slow) via `pg.Pool`.
+2. **ORM on top of Postgres** — tools like **Prisma**, **Sequelize**, or **TypeORM** (introduced conceptually in Section 11.7) sit on top of a driver like `pg` and let you avoid writing raw SQL for most operations, while still using PostgreSQL as the underlying engine. Prisma in particular has become extremely popular specifically for Node.js + PostgreSQL projects, with strong support for exactly the kinds of relationships (one-to-one, one-to-many, many-to-many) this project needs, plus a built-in migration system.
+
+**Migrations.** Whichever route you take, you'll want a way to track database schema changes over time as version-controlled files (e.g., "add `expiry_date` column to `medicines`"), so the schema can be recreated or updated consistently across environments (your machine, a teammate's machine, production). This is usually referred to as **migrations**, and it's a standard companion concept to any ORM you pick.
+
+**GUI/CLI tools.** Where SQL Server has SSMS (SQL Server Management Studio), PostgreSQL's rough equivalents are **pgAdmin** (a graphical tool) and **psql** (a command-line client) — useful for inspecting your tables and running ad-hoc queries while developing, separate from your actual application code.
+
+**Environment configuration.** Your Node.js app connects to Postgres using a **connection string** (also called a connection URI), typically something like `postgresql://user:password@host:port/database_name`. Just like the JWT secret (Section 18), this belongs in an environment variable (e.g., `DATABASE_URL` in a `.env` file) — never hard-coded into your source files.
 
 ---
 
@@ -472,12 +526,14 @@ At its core, inventory management is about keeping a **quantity** field accurate
 ### 12.2 Expiry Awareness
 
 Because this is a pharmacy, expiry dates aren't just informational — they're a **business rule that blocks certain actions**. Conceptually, "expiry awareness" means:
+
 - The system should be able to identify medicines that are expired, or expiring soon (useful for filtering/reporting, e.g., "show me all medicines expiring in the next 30 days").
-- Before allowing a sale to proceed, the system must **check the expiry date** and reject the sale if the medicine has already expired — this is a business-logic validation, separate from basic input validation (Section 15), because it depends on *stored data* (today's date vs. the medicine's expiry date), not just the shape of the incoming request.
+- Before allowing a sale to proceed, the system must **check the expiry date** and reject the sale if the medicine has already expired — this is a business-logic validation, separate from basic input validation (Section 15), because it depends on _stored data_ (today's date vs. the medicine's expiry date), not just the shape of the incoming request.
 
 ### 12.3 Preventing Invalid Sales (Business Logic Guards)
 
-The requirements explicitly call out: *"Prevent sales of out-of-stock or expired medicines."* This is a great example of a **domain rule** — a rule that comes from the real-world business (pharmacy operations), not from generic software patterns. Implementing this conceptually requires, at the moment a sale is attempted:
+The requirements explicitly call out: _"Prevent sales of out-of-stock or expired medicines."_ This is a great example of a **domain rule** — a rule that comes from the real-world business (pharmacy operations), not from generic software patterns. Implementing this conceptually requires, at the moment a sale is attempted:
+
 1. Look up the current stock quantity for the requested medicine.
 2. Check the requested sale quantity does not exceed available stock.
 3. Check the medicine's expiry date is in the future.
@@ -488,6 +544,7 @@ This kind of rule lives in your **service layer** (Section 17) — not in the da
 ### 12.4 Deactivation vs Deletion
 
 As mentioned earlier, "deactivating" a medicine (flipping an `isActive` flag to false) instead of deleting its row is the standard real-world approach, because:
+
 - Historical sales and prescriptions still need to reference that medicine's data — deleting it would break that history or force awkward orphaned references.
 - Deactivated medicines can be excluded from "available medicines" listings without losing any data.
 
@@ -498,6 +555,7 @@ As mentioned earlier, "deactivating" a medicine (flipping an `isActive` flag to 
 ### 13.1 A Sale as a Multi-Step Business Transaction
 
 Processing a sale isn't just "insert one row into a Sales table." It typically involves several coordinated steps:
+
 1. Validate that the requested medicines exist, are active, in stock, and not expired (Section 12.3).
 2. Create the `Sale` record itself (with references to the customer and the staff member processing it).
 3. Create the related `SaleMedicine` junction rows (one per medicine included in the sale, storing quantity and price at time of sale).
@@ -508,7 +566,8 @@ Processing a sale isn't just "insert one row into a Sales table." It typically i
 
 Here's a subtle but crucial concept: what happens if step 4 (reducing stock) fails halfway through — say, after updating one medicine's stock but before updating a second one in the same sale? You'd end up with **inconsistent data**: a sale record exists, but stock wasn't properly reduced for all items.
 
-This is exactly the problem that **database transactions** solve. A transaction lets you group multiple database operations into a single all-or-nothing unit: either *everything* succeeds and is saved, or if *anything* fails partway through, *everything* is rolled back as if nothing happened. This property is part of what's called **ACID** compliance in relational databases:
+This is exactly the problem that **database transactions** solve. A transaction lets you group multiple database operations into a single all-or-nothing unit: either _everything_ succeeds and is saved, or if _anything_ fails partway through, _everything_ is rolled back as if nothing happened. This property is part of what's called **ACID** compliance in relational databases:
+
 - **Atomicity** — all operations in the transaction succeed, or none do.
 - **Consistency** — the database moves from one valid state to another valid state.
 - **Isolation** — concurrent transactions don't interfere with each other's intermediate states.
@@ -518,11 +577,12 @@ For our project, wrapping the entire "process a sale" sequence in a transaction 
 
 ### 13.3 Sale Status Tracking
 
-The requirements mention supporting statuses like `completed` and `cancelled`. Conceptually, a **status field** models the *lifecycle* of a sale over time. A few things worth thinking through at the requirements level (even without implementing yet):
+The requirements mention supporting statuses like `completed` and `cancelled`. Conceptually, a **status field** models the _lifecycle_ of a sale over time. A few things worth thinking through at the requirements level (even without implementing yet):
+
 - What happens to stock if a completed sale is later **cancelled**? (Conceptually: stock should likely be restored — another good example of business logic that needs careful thought, not just a status flip.)
 - Should certain roles be restricted from cancelling sales (an RBAC + business-logic overlap)?
 
-Thinking through these "what if" scenarios during requirements analysis (Section 2) — *before* coding — is exactly what separates a robust system from a fragile one.
+Thinking through these "what if" scenarios during requirements analysis (Section 2) — _before_ coding — is exactly what separates a robust system from a fragile one.
 
 ### 13.4 Associating Sales with Staff and Customers
 
@@ -534,20 +594,23 @@ Every sale needs to answer "who processed this?" and "who was it for?" — these
 
 ### 14.1 Why Pagination Exists
 
-Imagine the `GET /medicines` endpoint with 10,000 medicines in the database. Returning *all* of them in a single response would be slow, waste bandwidth, and overwhelm whatever frontend is displaying the data. **Pagination** solves this by returning data in smaller "pages" or "chunks."
+Imagine the `GET /medicines` endpoint with 10,000 medicines in the database. Returning _all_ of them in a single response would be slow, waste bandwidth, and overwhelm whatever frontend is displaying the data. **Pagination** solves this by returning data in smaller "pages" or "chunks."
 
 ### 14.2 Offset-Based Pagination (the common approach for this kind of project)
 
 The client sends query parameters like:
+
 ```
 GET /medicines?page=2&limit=20
 ```
+
 - `limit` — how many records per page
 - `page` — which page number to return
 
 On the backend, this conceptually translates into "skip the first (page-1)×limit records, then take the next `limit` records" — most databases/ORMs support this directly (often called `offset` and `take`/`limit` under the hood).
 
 A well-designed paginated response also typically includes **metadata**, such as:
+
 ```
 {
   "data": [ ...medicines... ],
@@ -559,11 +622,13 @@ A well-designed paginated response also typically includes **metadata**, such as
   }
 }
 ```
+
 This metadata lets the frontend build page-navigation UI without needing a separate request just to count total records.
 
 ### 14.3 Filtering
 
 **Filtering** lets the client narrow down results based on specific criteria, expressed as query parameters. For our project, the requirements call out filters like:
+
 - **Availability** (e.g., `?inStock=true` — only show medicines currently in stock)
 - **Expiry range** (e.g., `?expiryFrom=2026-01-01&expiryTo=2026-06-30`)
 - **Date range** (for sales/prescriptions — e.g., `?dateFrom=...&dateTo=...`)
@@ -574,19 +639,23 @@ Conceptually, each filter translates into an additional condition added to the u
 
 ### 14.4 Sorting
 
-**Sorting** lets the client control the *order* of returned results, usually via a query parameter like:
+**Sorting** lets the client control the _order_ of returned results, usually via a query parameter like:
+
 ```
 GET /medicines?sortBy=expiryDate&order=asc
 ```
-This tells the backend which column to sort by (`sortBy`) and in which direction (`order` — ascending or descending). A well-designed API often restricts `sortBy` to a specific allow-list of safe, indexed fields, rather than letting the client sort by *any* arbitrary field — both for performance and security reasons (never directly interpolate user input into a raw query without validation).
+
+This tells the backend which column to sort by (`sortBy`) and in which direction (`order` — ascending or descending). A well-designed API often restricts `sortBy` to a specific allow-list of safe, indexed fields, rather than letting the client sort by _any_ arbitrary field — both for performance and security reasons (never directly interpolate user input into a raw query without validation).
 
 ### 14.5 Combining All Three
 
 In a real request, pagination, filtering, and sorting typically all work together, e.g.:
+
 ```
 GET /medicines?page=1&limit=10&inStock=true&sortBy=expiryDate&order=asc
 ```
-This reads naturally as: *"Give me page 1, 10 results per page, only in-stock medicines, sorted by soonest-to-expire first."* Designing your query-building logic to cleanly combine all three (rather than treating them as separate, conflicting features) is an important backend design skill.
+
+This reads naturally as: _"Give me page 1, 10 results per page, only in-stock medicines, sorted by soonest-to-expire first."_ Designing your query-building logic to cleanly combine all three (rather than treating them as separate, conflicting features) is an important backend design skill.
 
 ---
 
@@ -601,6 +670,7 @@ Never trust data coming from a client — whether it's a malicious user or just 
 **DTO** stands for **Data Transfer Object**. It's a concept (not a Node.js-specific feature) describing a clearly defined "shape" that data must match when moving between layers of your system — most commonly, the shape of the data a client is expected to send in a request body.
 
 For example, a "Create Medicine" DTO conceptually defines:
+
 - `name`: required, string
 - `stockQuantity`: required, number, must be zero or greater
 - `expiryDate`: required, valid date, must be in the future
@@ -610,7 +680,8 @@ Defining this shape explicitly (rather than just hoping the client sends the rig
 
 ### 15.3 How Validation Fits Into Express (Conceptually)
 
-In an Express app, validation is typically implemented as **middleware** (Section 4.3) that runs *before* the route's main controller logic:
+In an Express app, validation is typically implemented as **middleware** (Section 4.3) that runs _before_ the route's main controller logic:
+
 1. The request body arrives.
 2. Validation middleware checks it against the DTO's rules.
 3. If validation fails, the middleware immediately responds with a `400 Bad Request` and a clear message describing exactly what was wrong — the request never reaches your business logic.
@@ -621,8 +692,9 @@ In the Node.js ecosystem, libraries like `class-validator` (often paired with `c
 ### 15.4 Validation vs Business Logic — An Important Distinction
 
 It's worth clearly separating two different kinds of "checking":
-- **Validation** = checking the *shape and format* of input data (Is `stockQuantity` actually a number? Is `expiryDate` a valid date?) — this doesn't require looking anything up in the database.
-- **Business logic checks** = checking *rules that depend on stored data or domain knowledge* (Is this specific medicine currently out of stock? Has this specific supplier already been deactivated?) — this requires querying the database and understanding pharmacy-specific rules.
+
+- **Validation** = checking the _shape and format_ of input data (Is `stockQuantity` actually a number? Is `expiryDate` a valid date?) — this doesn't require looking anything up in the database.
+- **Business logic checks** = checking _rules that depend on stored data or domain knowledge_ (Is this specific medicine currently out of stock? Has this specific supplier already been deactivated?) — this requires querying the database and understanding pharmacy-specific rules.
 
 Beginners often blur these together, but keeping them conceptually (and often structurally) separate leads to much cleaner code — validation belongs in middleware near the "edge" of the request, while business rules belong deeper in your service layer (Section 17).
 
@@ -634,7 +706,7 @@ Beginners often blur these together, but keeping them conceptually (and often st
 
 Without a centralized approach, every single route handler would need its own `try/catch` block with manually duplicated logic for formatting error responses — messy and inconsistent. Express supports a special kind of middleware specifically for this: an **error-handling middleware**, recognizable because it takes **four** parameters instead of the usual three: `(err, req, res, next)`.
 
-This special middleware is defined *once*, placed at the very end of your middleware chain, and Express automatically routes any error there — whether it came from a thrown exception, a rejected Promise (when using `async/await` with proper error-forwarding), or an explicit `next(err)` call anywhere in your app.
+This special middleware is defined _once_, placed at the very end of your middleware chain, and Express automatically routes any error there — whether it came from a thrown exception, a rejected Promise (when using `async/await` with proper error-forwarding), or an explicit `next(err)` call anywhere in your app.
 
 ### 16.2 Custom Error Classes
 
@@ -643,6 +715,7 @@ A very common, clean pattern is to define your own custom error classes (extendi
 ### 16.3 Consistent Error Response Format
 
 A well-designed API returns errors in a predictable, consistent JSON shape every single time, e.g.:
+
 ```
 {
   "success": false,
@@ -651,6 +724,7 @@ A well-designed API returns errors in a predictable, consistent JSON shape every
   "errors": []
 }
 ```
+
 Consistency here matters enormously for whoever consumes your API (a frontend developer, or you demoing this project) — they can write generic error-handling logic once, trusting that every error from your API "looks the same," rather than needing special-case handling per endpoint.
 
 ### 16.4 Meaningful Messages, Not Leaky Details
@@ -665,24 +739,25 @@ Error messages should be genuinely helpful to the API consumer ("Stock quantity 
 
 As a project grows, cramming database queries, business rules, and request/response handling all into one giant route handler function becomes unmanageable and hard to test. A **layered architecture** splits responsibilities into distinct layers, each with a single clear job. A very common pattern (sometimes loosely called MVC-inspired, though APIs don't literally have a "View") is:
 
-| Layer | Responsibility |
-|---|---|
-| **Routes** | Define URL patterns and HTTP methods; wire up middleware and controllers |
-| **Middleware** | Cross-cutting concerns: auth, validation, error handling (Sections 4.3, 15, 16) |
-| **Controllers** | Receive the request, call the right service function(s), and shape the HTTP response — thin, no business logic |
-| **Services** | The actual business logic (e.g., "process a sale," "check if a medicine can be sold") — this is where rules from Sections 12 and 13 live |
-| **Models / Repository layer** | Talk directly to the database (often handled by the ORM) — fetching, saving, and updating records |
+| Layer                         | Responsibility                                                                                                                           |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **Routes**                    | Define URL patterns and HTTP methods; wire up middleware and controllers                                                                 |
+| **Middleware**                | Cross-cutting concerns: auth, validation, error handling (Sections 4.3, 15, 16)                                                          |
+| **Controllers**               | Receive the request, call the right service function(s), and shape the HTTP response — thin, no business logic                           |
+| **Services**                  | The actual business logic (e.g., "process a sale," "check if a medicine can be sold") — this is where rules from Sections 12 and 13 live |
+| **Models / Repository layer** | Talk directly to the database (often handled by the ORM) — fetching, saving, and updating records                                        |
 
 ### 17.2 Why This Separation Matters
 
 - **Testability**: business logic in the service layer can be tested independently of HTTP concerns.
 - **Reusability**: the same service function could be reused by multiple controllers, or even a background job, without duplicating logic.
-- **Clarity**: when something breaks, you know exactly *which layer* to look in — a wrong error message points you to controllers, a wrong business rule points you to services, a wrong query points you to the model/repository layer.
+- **Clarity**: when something breaks, you know exactly _which layer_ to look in — a wrong error message points you to controllers, a wrong business rule points you to services, a wrong query points you to the model/repository layer.
 - **Team collaboration**: different people can work on different layers with a clear, agreed-upon contract between them.
 
 ### 17.3 Applying This to Our Project
 
 For example, the "process a sale" flow (Section 13.1) would be organized like this conceptually:
+
 - **Route**: `POST /sales` → points to `salesController.createSale`
 - **Middleware chain**: auth guard → role guard (Pharmacist/Staff) → validation middleware (DTO for sale creation)
 - **Controller**: extracts validated data from `req.body` and the authenticated user from `req.user`, calls `salesService.processSale(...)`, and returns the formatted response
@@ -708,31 +783,31 @@ A quick consolidated reference of security concepts relevant to this project (mo
 
 ## 19. Glossary of Key Terms
 
-| Term | Plain-English Meaning |
-|---|---|
-| **API** | A set of URLs/endpoints that let programs talk to each other |
-| **Node.js** | A runtime that lets JavaScript run outside the browser, e.g. on a server |
-| **Express.js** | A framework built on Node.js for building web servers/APIs easily |
-| **Middleware** | A function that runs between a request coming in and the final response |
-| **Event Loop** | The mechanism that lets Node.js handle many operations without blocking |
-| **REST** | A standard style of designing APIs around resources and HTTP methods |
-| **JWT** | A signed token that proves who a user is, without the server storing sessions |
-| **Authentication** | Verifying *who* someone is |
-| **Authorization** | Verifying *what* someone is allowed to do |
-| **RBAC** | Assigning permissions to roles, then assigning roles to users |
-| **Hashing** | A one-way scrambling of data (used for passwords), can't be reversed |
-| **Salting** | Adding random data to a password before hashing, to make attacks harder |
-| **Primary Key** | The unique identifier for a row in a database table |
-| **Foreign Key** | A column that links to a primary key in another table |
-| **One-to-One** | One record relates to exactly one other record |
-| **One-to-Many** | One record relates to many records in another table |
-| **Many-to-Many** | Records on both sides can relate to multiple records on the other side |
-| **Junction Table** | A helper table used to implement many-to-many relationships |
-| **ORM** | A tool that lets you interact with your database using code objects instead of raw SQL |
-| **DTO** | A defined "shape" that incoming data must match |
-| **Pagination** | Splitting large result sets into smaller pages |
-| **ACID Transaction** | A group of database operations that all succeed together, or all fail together |
-| **Idempotent** *(bonus term)* | An operation that produces the same result no matter how many times it's repeated (e.g., `GET` requests should be idempotent) |
+| Term                          | Plain-English Meaning                                                                                                         |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| **API**                       | A set of URLs/endpoints that let programs talk to each other                                                                  |
+| **Node.js**                   | A runtime that lets JavaScript run outside the browser, e.g. on a server                                                      |
+| **Express.js**                | A framework built on Node.js for building web servers/APIs easily                                                             |
+| **Middleware**                | A function that runs between a request coming in and the final response                                                       |
+| **Event Loop**                | The mechanism that lets Node.js handle many operations without blocking                                                       |
+| **REST**                      | A standard style of designing APIs around resources and HTTP methods                                                          |
+| **JWT**                       | A signed token that proves who a user is, without the server storing sessions                                                 |
+| **Authentication**            | Verifying _who_ someone is                                                                                                    |
+| **Authorization**             | Verifying _what_ someone is allowed to do                                                                                     |
+| **RBAC**                      | Assigning permissions to roles, then assigning roles to users                                                                 |
+| **Hashing**                   | A one-way scrambling of data (used for passwords), can't be reversed                                                          |
+| **Salting**                   | Adding random data to a password before hashing, to make attacks harder                                                       |
+| **Primary Key**               | The unique identifier for a row in a database table                                                                           |
+| **Foreign Key**               | A column that links to a primary key in another table                                                                         |
+| **One-to-One**                | One record relates to exactly one other record                                                                                |
+| **One-to-Many**               | One record relates to many records in another table                                                                           |
+| **Many-to-Many**              | Records on both sides can relate to multiple records on the other side                                                        |
+| **Junction Table**            | A helper table used to implement many-to-many relationships                                                                   |
+| **ORM**                       | A tool that lets you interact with your database using code objects instead of raw SQL                                        |
+| **DTO**                       | A defined "shape" that incoming data must match                                                                               |
+| **Pagination**                | Splitting large result sets into smaller pages                                                                                |
+| **ACID Transaction**          | A group of database operations that all succeed together, or all fail together                                                |
+| **Idempotent** _(bonus term)_ | An operation that produces the same result no matter how many times it's repeated (e.g., `GET` requests should be idempotent) |
 
 ---
 
