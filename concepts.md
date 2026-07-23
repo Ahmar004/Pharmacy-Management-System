@@ -199,7 +199,7 @@ try {
 
 ---
 
-### 3.6 npm vs npx — What They're For and When to Use Which
+### 3.6 npm vs npx - What They're For and When to Use Which
 
 - **npm (Node Package Manager)** — installs and manages packages. Running `npm install pg` downloads the PostgreSQL driver into your project's `node_modules` folder and adds it to `package.json` as a **permanent dependency** your app will need every time it runs.
 - **npx (Node Package eXecute)** — *runs* a package's command-line tool. If that tool is already installed (locally in `node_modules/.bin`, or globally), `npx` just runs it. If it **isn't installed at all**, `npx` will temporarily download it, run it once, and not leave it installed in your project — useful for one-off commands you don't want cluttering your dependencies.
