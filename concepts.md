@@ -1,6 +1,6 @@
 # Pharmacy Management System API
 
-## A Complete Concept & Requirements Study Guide (Node.js + Express.js)
+## A Complete Concept & Requirements Study Guide (Express.js, Node.js, PostGreSQL)
 
 > **Purpose of this document:** Before writing a single line of code, this guide walks through _every concept_ I need to understand in order to build this project correctly. No implementation - just deep, beginner friendly understanding of the "why" and "how" behind each concept.
 
@@ -45,7 +45,7 @@ The system needs to let a pharmacy:
 - Let API consumers **search, filter, sort, and page through** large lists of data
 - **Validate** every piece of incoming data and respond with clear, meaningful errors
 
-This is a real-world backend project that makes me practice almost every core backend skill at once: auth, relational data design, business rules, and clean API design.
+This is a classic real-world backend project because it forces you to practice almost every core backend skill at once: auth, relational data design, business rules, and clean API design.
 
 ---
 
@@ -143,7 +143,7 @@ The **event loop** is the mechanism that makes non-blocking behavior possible. I
 2. Runs it
 3. Goes back and checks again
 
-You don't have to manage the event loop yourself — it runs automatically for the entire life of your Node.js application. Understanding that it _exists_ helps you understand why asynchronous code (`async/await`, Promises, callbacks) is the natural way to write Node.js applications — you're always cooperating with this loop rather than blocking it.
+You don't have to manage the event loop yourself - it runs automatically for the entire life of your Node.js application. Understanding that it _exists_ helps you understand why asynchronous code (`async/await`, Promises, callbacks) is the natural way to write Node.js applications - you're always cooperating with this loop rather than blocking it.
 
 **Why this matters for our project:** every database call (fetching medicines, checking prescriptions, saving a sale) is an I/O operation. We'll write these using `async/await` syntax, which is just a cleaner way to write asynchronous, non-blocking code without deeply nesting callbacks.
 
@@ -151,8 +151,8 @@ You don't have to manage the event loop yourself — it runs automatically for t
 
 **The core difference**
 
-- **Parallel** = two things *actually* happening at the exact same instant. This requires two separate workers (two CPU cores, two threads) each doing their own task simultaneously.
-- **Concurrent** = two things *appear* to be happening at the same time, but really it's one worker rapidly switching between tasks — doing a little bit of A, then a little bit of B, then back to A — so fast it looks simultaneous, even though at any single moment only one thing is actually being worked on.
+- **Parallel** = two things _actually_ happening at the exact same instant. This requires two separate workers (two CPU cores, two threads) each doing their own task simultaneously.
+- **Concurrent** = two things _appear_ to be happening at the same time, but really it's one worker rapidly switching between tasks — doing a little bit of A, then a little bit of B, then back to A — so fast it looks simultaneous, even though at any single moment only one thing is actually being worked on.
 
 **The single-cashier analogy**
 
@@ -180,20 +180,21 @@ Node.js code is organized into **modules** — each file is its own self-contain
 ### 3.5 Callbacks, Promises, Async/Await, explaining each in the aspect of Event Loop
 
 **The purpose of each, in one line:**
+
 - **Callback** — "call this function when you're done." The original way JS handled async work.
-- **Promise** — an object representing a value that *will exist eventually* (pending → fulfilled/rejected). Solves "callback hell" (deeply nested callbacks).
-- **async/await** — syntax sugar *on top of* Promises. Lets async code *read* like normal, top-to-bottom synchronous code, while still being non-blocking underneath.
+- **Promise** — an object representing a value that _will exist eventually_ (pending → fulfilled/rejected). Solves "callback hell" (deeply nested callbacks).
+- **async/await** — syntax sugar _on top of_ Promises. Lets async code _read_ like normal, top-to-bottom synchronous code, while still being non-blocking underneath.
 
 **What actually happens at the event-loop level:**
 
 1. Calling an `async function` runs it **synchronously** — line by line — right up until it hits an `await`.
 2. At `await somePromise`, the function's execution is **paused right there**, and — critically — **control is immediately handed back to whatever called it**. The async function itself has already returned a (still-pending) Promise to its caller by this point.
 3. The call stack is now free. The event loop goes on running other code — handling other incoming requests, timers, other pending operations — completely unaffected.
-4. When the awaited operation (e.g. a database query) actually finishes, the *rest* of that paused function is queued up (as a "microtask") to run next, and picks up exactly where it left off.
+4. When the awaited operation (e.g. a database query) actually finishes, the _rest_ of that paused function is queued up (as a "microtask") to run next, and picks up exactly where it left off.
 
-**So — is `await` blocking?** No. It only pauses *that specific function's own continuation*. It does not freeze Node, the thread, or any other request being handled. Think back to the single-waiter restaurant analogy (Section 3.2): `await` is the waiter saying "I'll come back to this table once the kitchen's done" — not the waiter standing frozen at the table.
+**So — is `await` blocking?** No. It only pauses _that specific function's own continuation_. It does not freeze Node, the thread, or any other request being handled. Think back to the single-waiter restaurant analogy (Section 3.2): `await` is the waiter saying "I'll come back to this table once the kitchen's done" — not the waiter standing frozen at the table.
 
-**Is it "parallel"?** No — it's **concurrent**, not parallel. There is still only one thread executing your JS, one instruction at a time. What async/await achieves is *overlapping the waiting time* of multiple operations, not literally running multiple pieces of code at the same instant. True parallel execution (multiple cores actually computing simultaneously) requires separate threads or processes — outside what async/await does.
+**Is it "parallel"?** No — it's **concurrent**, not parallel. There is still only one thread executing your JS, one instruction at a time. What async/await achieves is _overlapping the waiting time_ of multiple operations, not literally running multiple pieces of code at the same instant. True parallel execution (multiple cores actually computing simultaneously) requires separate threads or processes — outside what async/await does.
 
 **Why async/await over raw callbacks/Promises today?** Mainly readability. The following are conceptually equivalent, but async/await avoids nested indentation and lets you use normal `try/catch` for error handling:
 
@@ -206,7 +207,7 @@ getMedicine(id, (err, medicine) => {
 
 // Promise style
 getMedicine(id)
-  .then(medicine => console.log(medicine))
+  .then((medicine) => console.log(medicine))
   .catch(handleError);
 
 // async/await style
@@ -232,28 +233,28 @@ getCustomer(customerId, (err, customer) => {
       if (err) return handleError(err);
       checkStock(medicines, (err, stockOk) => {
         if (err) return handleError(err);
-        console.log('Ready to sell:', stockOk);
+        console.log("Ready to sell:", stockOk);
       });
     });
   });
 });
 ```
 
-Every new step indents further right, error handling is repeated at every level, and reading the *actual order of operations* means following an ever-deepening staircase.
+Every new step indents further right, error handling is repeated at every level, and reading the _actual order of operations_ means following an ever-deepening staircase.
 
 **Promises flatten this** by letting each async step return an object you can `.then()` off of, chaining steps at the **same indentation level** instead of nesting inside each other:
 
 ```js
 // Same logic, with Promises — flat, chained, one error handler for everything
 getCustomer(customerId)
-  .then(customer => getPrescription(customer.id))
-  .then(prescription => getMedicines(prescription.id))
-  .then(medicines => checkStock(medicines))
-  .then(stockOk => console.log('Ready to sell:', stockOk))
+  .then((customer) => getPrescription(customer.id))
+  .then((prescription) => getMedicines(prescription.id))
+  .then((medicines) => checkStock(medicines))
+  .then((stockOk) => console.log("Ready to sell:", stockOk))
   .catch(handleError); // one catch handles an error from ANY step above
 ```
 
-No pyramid, no repeated `if (err)` checks at every level — just one `.catch()` at the end that catches a failure from *any* step in the chain.
+No pyramid, no repeated `if (err)` checks at every level — just one `.catch()` at the end that catches a failure from _any_ step in the chain.
 
 ---
 
@@ -264,15 +265,18 @@ Async/await is just cleaner syntax over the same Promise chain above — it read
 ```js
 // Promise-chain style controller
 function getMedicineById(req, res) {
-  medicineService.findById(req.params.id)
-    .then(medicine => {
+  medicineService
+    .findById(req.params.id)
+    .then((medicine) => {
       if (!medicine) {
-        return res.status(404).json({ success: false, message: 'Medicine not found' });
+        return res
+          .status(404)
+          .json({ success: false, message: "Medicine not found" });
       }
       res.status(200).json({ success: true, data: medicine });
     })
-    .catch(err => {
-      res.status(500).json({ success: false, message: 'Something went wrong' });
+    .catch((err) => {
+      res.status(500).json({ success: false, message: "Something went wrong" });
     });
 }
 
@@ -281,11 +285,13 @@ async function getMedicineById(req, res) {
   try {
     const medicine = await medicineService.findById(req.params.id);
     if (!medicine) {
-      return res.status(404).json({ success: false, message: 'Medicine not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Medicine not found" });
     }
     res.status(200).json({ success: true, data: medicine });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Something went wrong' });
+    res.status(500).json({ success: false, message: "Something went wrong" });
   }
 }
 ```
@@ -297,14 +303,17 @@ Both versions do exactly the same thing under the hood — `findById` still retu
 ### 3.6 npm vs npx - What They're For and When to Use Which
 
 - **npm (Node Package Manager)** — installs and manages packages. Running `npm install pg` downloads the PostgreSQL driver into your project's `node_modules` folder and adds it to `package.json` as a **permanent dependency** your app will need every time it runs.
-- **npx (Node Package eXecute)** — *runs* a package's command-line tool. If that tool is already installed (locally in `node_modules/.bin`, or globally), `npx` just runs it. If it **isn't installed at all**, `npx` will temporarily download it, run it once, and not leave it installed in your project — useful for one-off commands you don't want cluttering your dependencies.
+- **npx (Node Package eXecute)** — _runs_ a package's command-line tool. If that tool is already installed (locally in `node_modules/.bin`, or globally), `npx` just runs it. If it **isn't installed at all**, `npx` will temporarily download it, run it once, and not leave it installed in your project — useful for one-off commands you don't want cluttering your dependencies.
 
 **Project examples:**
+
 - `npm install express pg bcrypt jsonwebtoken` → these are libraries your API actually imports and runs on every request — permanent dependencies, so `npm install`.
 - `npx prisma init` → a one-time scaffolding command to set up Prisma's folder structure — you're not "running your app" with this, just generating files once, so `npx` (no need to ever install a global `prisma` CLI).
 - `npx nodemon index.js` → if you haven't installed `nodemon` as a project dependency yet, this runs it anyway without a permanent install. (Though in practice, since you'd use it constantly during development, most projects instead run `npm install --save-dev nodemon` once, then use `npm run dev` — a `package.json` script — to launch it.)
 
 **Rule of thumb:** if your **code will `require()`/`import` it** → `npm install` it as a real dependency. If you just need to **run a CLI tool**, especially a one-off or something you don't want permanently installed → `npx`.
+
+---
 
 ---
 
@@ -375,6 +384,15 @@ Express also supports **routers** — a way to group related routes into their o
   - `DELETE` → remove data
 - **Statelessness**: Each request must contain everything the server needs to understand it (like the auth token). The server does NOT remember anything about you between requests — there's no "session memory" sitting on the server. This is exactly why JWT-based authentication (Section 7) fits REST so well: the token itself carries the proof of who you are, every single request.
 - **Uniform interface**: Predictable URL structure and consistent response formats make the API easy for any frontend to consume.
+
+### 5.1.1 Example of GET requests along with resource:
+
+- GET /medicines?q=paracetamol → search medicines by name/keyword
+- GET /medicines?inStock=true → filter: only in-stock medicines
+- GET /medicines?page=2&limit=20 → pagination
+- GET /medicines?sortBy=expiryDate&order=asc → sorting
+- GET /medicines?inStock=true&sortBy=expiryDate&order=asc&page=1&limit=10
+  → all combined in one request
 
 ### 5.2 HTTP Status Codes
 
