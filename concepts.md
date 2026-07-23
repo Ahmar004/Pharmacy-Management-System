@@ -218,6 +218,80 @@ try {
 }
 ```
 
+### 3.5.1 How Promises Solve "Callback Hell"
+
+When multiple async steps depend on each other using callbacks, you end up nesting one inside another — deeper and deeper with every step. This is called **"callback hell"** (or the "pyramid of doom"):
+
+```js
+// Callback hell — nested, hard to read, hard to error-handle
+getCustomer(customerId, (err, customer) => {
+  if (err) return handleError(err);
+  getPrescription(customer.id, (err, prescription) => {
+    if (err) return handleError(err);
+    getMedicines(prescription.id, (err, medicines) => {
+      if (err) return handleError(err);
+      checkStock(medicines, (err, stockOk) => {
+        if (err) return handleError(err);
+        console.log('Ready to sell:', stockOk);
+      });
+    });
+  });
+});
+```
+
+Every new step indents further right, error handling is repeated at every level, and reading the *actual order of operations* means following an ever-deepening staircase.
+
+**Promises flatten this** by letting each async step return an object you can `.then()` off of, chaining steps at the **same indentation level** instead of nesting inside each other:
+
+```js
+// Same logic, with Promises — flat, chained, one error handler for everything
+getCustomer(customerId)
+  .then(customer => getPrescription(customer.id))
+  .then(prescription => getMedicines(prescription.id))
+  .then(medicines => checkStock(medicines))
+  .then(stockOk => console.log('Ready to sell:', stockOk))
+  .catch(handleError); // one catch handles an error from ANY step above
+```
+
+No pyramid, no repeated `if (err)` checks at every level — just one `.catch()` at the end that catches a failure from *any* step in the chain.
+
+---
+
+### 3.5.2 Promise vs Async/Await in a Real Express Route
+
+Async/await is just cleaner syntax over the same Promise chain above — it reads top-to-bottom like normal synchronous code:
+
+```js
+// Promise-chain style controller
+function getMedicineById(req, res) {
+  medicineService.findById(req.params.id)
+    .then(medicine => {
+      if (!medicine) {
+        return res.status(404).json({ success: false, message: 'Medicine not found' });
+      }
+      res.status(200).json({ success: true, data: medicine });
+    })
+    .catch(err => {
+      res.status(500).json({ success: false, message: 'Something went wrong' });
+    });
+}
+
+// async/await style controller — same behavior, reads like sync code
+async function getMedicineById(req, res) {
+  try {
+    const medicine = await medicineService.findById(req.params.id);
+    if (!medicine) {
+      return res.status(404).json({ success: false, message: 'Medicine not found' });
+    }
+    res.status(200).json({ success: true, data: medicine });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Something went wrong' });
+  }
+}
+```
+
+Both versions do exactly the same thing under the hood — `findById` still returns a Promise either way. `async/await` just lets you write `try/catch` instead of `.then()/.catch()`, which reads far more naturally once you have several dependent steps (like the customer → prescription → medicines → stock-check chain above).
+
 ---
 
 ### 3.6 npm vs npx - What They're For and When to Use Which
