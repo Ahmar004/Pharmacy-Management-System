@@ -147,6 +147,27 @@ You don't have to manage the event loop yourself — it runs automatically for t
 
 **Why this matters for our project:** every database call (fetching medicines, checking prescriptions, saving a sale) is an I/O operation. We'll write these using `async/await` syntax, which is just a cleaner way to write asynchronous, non-blocking code without deeply nesting callbacks.
 
+### 3.3.1 Concurrent vs Parallel — Node.js Is Concurrent, Not Parallel
+
+**The core difference**
+
+- **Parallel** = two things *actually* happening at the exact same instant. This requires two separate workers (two CPU cores, two threads) each doing their own task simultaneously.
+- **Concurrent** = two things *appear* to be happening at the same time, but really it's one worker rapidly switching between tasks — doing a little bit of A, then a little bit of B, then back to A — so fast it looks simultaneous, even though at any single moment only one thing is actually being worked on.
+
+**The single-cashier analogy**
+
+Imagine one cashier at a counter (this is your one JS thread).
+
+**Parallel** would be: hire a second cashier. Now two customers really are being served at the exact same second, by two different people.
+
+**Concurrent** (what Node.js does) is: there's still only **one** cashier. But instead of serving Customer A from start to finish before even looking at Customer B, the cashier does this:
+
+1. Takes Customer A's order, sends it to the kitchen, and — instead of standing there waiting — immediately turns to Customer B and takes their order too.
+2. Sends B's order to the kitchen as well.
+3. Whichever order the kitchen finishes first, the cashier goes back, hands it over, then returns to whatever's next.
+
+From the customers' point of view, it feels like they're both being served "at once" — but if you freeze time at any single moment, the cashier is only ever doing one specific action. Never two at literally the same instant.
+
 ### 3.4 npm and Modules
 
 **npm** (Node Package Manager) is the tool that comes bundled with Node.js. It lets you:
